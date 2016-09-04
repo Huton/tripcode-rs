@@ -1,5 +1,5 @@
 # Tripcode
-[![ビルド状況](https://travis-ci.org/huton/tripcode.svg?branch=master)](https://travis-ci.org/huton/tripcode)
+[![ビルド状況](https://travis-ci.org/huton/tripcode-rs.svg?branch=master)](https://travis-ci.org/huton/tripcode-rs)
 [![最新バージョン](http://meritbadge.herokuapp.com/tripcode)](https://crates.io/crates/tripcode)
 
 [ドキュメント（英語）](https://docs.rs/tripcode/)
