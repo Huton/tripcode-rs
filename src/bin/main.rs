@@ -30,13 +30,13 @@ fn main() {
         .optflag("p", "password", "print passwords along with tripcodes");
 
     macro_rules! print_usage {
-        ($out:expr) => (write!($out, "{}", opts.usage(&brief)).unwrap());
+        ($out:expr) => (write!($out, "{}", opts.usage(&brief)));
     }
 
     macro_rules! fail {
         ($($arg:tt)*) => {{
             writeln!(io::stderr(), "{}: {}\n", program, format!($($arg)*)).unwrap();
-            print_usage!(io::stderr());
+            print_usage!(io::stderr()).unwrap();
             process::exit(1);
         }};
     }
@@ -47,7 +47,7 @@ fn main() {
     };
 
     if matches.opt_present("h") {
-        print_usage!(&mut stdout);
+        print_usage!(&mut stdout).unwrap();
         return;
     }
 
