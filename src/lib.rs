@@ -437,15 +437,15 @@ impl TripcodeGenerator for FourchanNonescaping {
     type Hash = FourchanHash;
 
     fn hash<P: AsRef<[u8]>>(password: &P) -> Self::Hash {
-        let password = password.as_ref();
+        let as_ref = password.as_ref();
 
-        let salt = match password.len() {
-            0 | 1 => decode_salt(b'H', b'.'),
-            2 => decode_salt(password[1], b'H'),
-            _ => decode_salt(password[1], password[2]),
+        let (salt1, salt2) = match as_ref.len() {
+            0 | 1 => (b'H', b'.'),
+            2 => (as_ref[1], b'H'),
+            _ => (as_ref[1], as_ref[2]),
         };
 
-        FourchanHash(des::zero_cipher_58(secret_to_key(password), salt))
+        Des::hash(password, salt1, salt2)
     }
 }
 
