@@ -540,7 +540,14 @@ impl TripcodeGeneratorFailable for MonaRaw {
         for (i, b) in packed.iter_mut().enumerate() {
             let (d1, d0) = (password[2*i+1], password[2*i+2]);
             let byte = (try_hex!(d1) << 4) | try_hex!(d0);
-            if byte == 0 { break; }
+            // Ignore all bytes after a null byte.
+            if byte == 0 {
+                if password[(2*i+1)..17].iter().all(|&c| hex_to_i(c) != 0x10) {
+                    break;
+                } else {
+                    return None;
+                }
+             }
             *b = byte;
         }
 
@@ -764,6 +771,7 @@ mod tests {
         assert_tripcode_eq!("???", "#abcdefghijklmnop");
         assert_tripcode_eq!("???", "#fedcba9876543210!!");
         assert_tripcode_eq!("???", "#abcdef0123456789ghi");
+        assert_tripcode_eq!("???", "#00abcdefghijklmn..");
     }
 
     #[test]
