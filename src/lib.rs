@@ -226,6 +226,36 @@ pub struct Sc15;
 /// Generator for _2ch.sc_'s katakana tripcodes (カタカナトリップ).
 pub struct ScKatakana;
 
+/// Generator for DES-based tripcodes (4chan and 2channel's 10-character tripcode)
+/// that accepts custom salt characters.
+///
+/// It is essentially the same as `crypt(3)`, but treats invalid salt characters in 4chan and
+/// 2channel's fashion, i.e., invalid salt characters are reinterpreted as per the following table.
+///
+/// | 0x |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  A  |  B  |  C  |  D  |  E  |  F  |
+/// |----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
+/// | 00 | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` |
+/// | 10 | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` |
+/// | 20 | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `/` |
+/// | 30 | `0` | `1` | `2` | `3` | `4` | `5` | `6` | `7` | `8` | `9` | `A` | `B` | `C` | `D` | `E` | `F` |
+/// | 40 | `G` | `A` | `B` | `C` | `D` | `E` | `F` | `G` | `H` | `I` | `J` | `K` | `L` | `M` | `N` | `O` |
+/// | 50 | `P` | `Q` | `R` | `S` | `T` | `U` | `V` | `W` | `X` | `Y` | `Z` | `a` | `b` | `c` | `d` | `e` |
+/// | 60 | `f` | `a` | `b` | `c` | `d` | `e` | `f` | `g` | `h` | `i` | `j` | `k` | `l` | `m` | `n` | `o` |
+/// | 70 | `p` | `q` | `r` | `s` | `t` | `u` | `v` | `w` | `x` | `y` | `z` | `.` | `.` | `.` | `.` | `.` |
+/// | 80 | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` |
+/// | 90 | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` |
+/// | A0 | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` |
+/// | B0 | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` |
+/// | C0 | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` |
+/// | D0 | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` |
+/// | E0 | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` |
+/// | F0 | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` | `.` |
+///
+/// ## Reference
+///
+/// * https://osdn.jp/projects/naniya/wiki/2chtrip (Japanese)
+pub struct Des;
+
 /// Trait for generators of tripcodes.
 pub trait TripcodeGenerator {
     /// The type of hash value that represents resulting tripcodes.
@@ -640,6 +670,33 @@ impl TripcodeGenerator for ScKatakana {
     }
 }
 
+impl Des {
+    /// Generates a hash value from `password` and a pair of custom salt characters.
+    pub fn hash<P: AsRef<[u8]>>(password: &P, salt1: u8, salt2: u8) -> FourchanHash {
+        let key = secret_to_key(password.as_ref());
+        let salt = decode_salt(salt1, salt2);
+        FourchanHash(des::zero_cipher_58(key, salt))
+    }
+
+    #[inline]
+    /// Generates a tripcode from `password` and a pair of custom salt characters.
+    pub fn generate<P: AsRef<[u8]>>(password: &P, salt1: u8, salt2: u8) -> String {
+        Self::hash(password, salt1, salt2).encode()
+    }
+
+    #[inline]
+    /// Generates a tripcode and appends it to a `String`.
+    pub fn append<P: AsRef<[u8]>>(password: &P, salt1: u8, salt2: u8, dst: &mut String) {
+        Self::hash(password, salt1, salt2).append(dst);
+    }
+
+    #[inline]
+    /// Generates a tripcode into a `Write`.
+    pub fn write<P, W>(password: &P, salt1: u8, salt2: u8, dst: &mut W) -> io::Result<()> where P: AsRef<[u8]>, W: Write {
+        Self::hash(password, salt1, salt2).write(dst)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     extern crate encoding;
@@ -743,6 +800,14 @@ mod tests {
     }
 
     #[test]
+    fn des() {
+        let tripcode = Des::generate(&"password", b'a', b's');
+        assert_eq!("ozOtJW9BFA", &tripcode);
+        let tripcode = Des::generate(&"", b'H', b'.');
+        assert_eq!("jPpg5.obl6", &tripcode);
+    }
+
+    #[test]
     fn append() {
         let mut tripcode = String::new();
 
@@ -754,6 +819,7 @@ mod tests {
         let k = SJIS.encode(&"$｡1008343131", EncoderTrap::Strict).unwrap();
         ScKatakana::append(&k, &mut tripcode);
         Sc15::append(&"$a9876543210", &mut tripcode);
+        Des::append(&"de", b'e', b'H', &mut tripcode);
 
         assert_eq!(
             "ZnBI2EKkq.\
@@ -763,6 +829,7 @@ mod tests {
              ???\
              ﾃｽﾄ!ｹﾏﾜｬｴ･ｧﾎﾖｲﾎ\
              x.r.XzgFZywTJhG\
+             yqYXjvHgbk\
             ",
             &tripcode
          );
