@@ -101,9 +101,8 @@ pub fn hex_to_i(c: u8) -> u8 {
     HEX_DECODING[c as usize]
 }
 
-/// Decodes a salt character in a tripcode password.
-/// `i` is the character's index in the password.
-pub fn decode_salt_char(c: u8, i: usize) -> u32 {
+/// Decodes a pair of salt characters in a tripcode password.
+pub fn decode_salt(salt1: u8, salt2: u8) -> u32 {
     const SALT_DECODING: [u32; 256] = [
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -122,17 +121,7 @@ pub fn decode_salt_char(c: u8, i: usize) -> u32 {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     ];
-
-    match i {
-        1 => SALT_DECODING[c as usize] << 26,
-        2 => SALT_DECODING[c as usize] << 18,
-        _ => 0,
-    }
-}
-
-/// Decodes a pair of salt characters in a tripcode password.
-pub fn decode_salt(salt1: u8, salt2: u8) -> u32 {
-    decode_salt_char(salt1, 1) | decode_salt_char(salt2, 2)
+    (SALT_DECODING[salt1 as usize] << 26) | (SALT_DECODING[salt2 as usize] << 18)
 }
 
 /// Decodes a pair of salt characters in a password of a nama key tripcode (生キートリップ).
