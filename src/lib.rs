@@ -387,7 +387,7 @@ macro_rules! des_cipher_escaped {
     // `$escaper`: `fourchan_escape` or `mona_escape`.
     ($password:expr, $escaper:ident) => {{
         let mut key = 0u64;
-        let mut salt = 0u32;
+        let (mut salt1, mut salt2) = (b'H', b'.');
 
         /* HTML escape and pack the password */
         let mut j = 0; // index in escaped password
@@ -396,15 +396,19 @@ macro_rules! des_cipher_escaped {
                 key |= pack_u64_be(escaped) >> 8*j;
                 // assuming that `escaped` is at least 3 bytes long.
                 match j {
-                    0 => salt  = decode_salt(escaped[1], escaped[2]),
-                    1 => salt  = decode_salt(escaped[0], escaped[1]),
-                    2 => salt |= decode_salt(b'.',       escaped[0]),
+                    0 => { salt1 = escaped[1]; salt2 = escaped[2] },
+                    1 => { salt1 = escaped[0]; salt2 = escaped[1] },
+                    2 =>                       salt2 = escaped[0],
                     _ => (),
                 }
                 j += escaped.len();
             }, || {
                 key |= (c as u64) << (8*(7-j));
-                salt |= decode_salt_char(c, j);
+                match j {
+                    1 => salt1 = c,
+                    2 => salt2 = c,
+                    _ => (),
+                }
                 j += 1;
             });
             if j >= 8 {
@@ -412,13 +416,10 @@ macro_rules! des_cipher_escaped {
             }
         }
 
-        match j {
-            0 | 1 => salt  = decode_salt(b'H', b'.'),
-            2     => salt |= decode_salt(b'.', b'H'),
-            _     => (),
-        }
+        if j == 2 { salt2 = b'H'; }
 
         key = key << 1 & 0xFEFE_FEFE_FEFE_FEFE;
+        let salt = decode_salt(salt1, salt2);
 
         des::zero_cipher_58(key, salt)
     }};
