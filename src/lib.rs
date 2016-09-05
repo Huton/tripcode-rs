@@ -192,7 +192,7 @@ pub struct Mona12;
 /// Same as `Mona12` except that it does not escape HTML special characters in passwords.
 pub struct Mona12Nonescaping;
 
-/// Generator for 2channel's `nama key` tripcodes (生キートリップ).
+/// Generator for 2channel's _nama key_ tripcodes (生キートリップ).
 ///
 /// This generator is failable so only implements `TripcodeGeneratorFailable`.
 pub struct MonaRaw;
@@ -328,7 +328,7 @@ pub trait TripcodeGeneratorFailable {
     }
 
     #[inline]
-    /// Attempts to generate a tripcode into a `String`.
+    /// Attempts to generate a tripcode and append it to a `String`.
     ///
     /// Returns `None` when passed an invalid password.
     fn try_append<P: AsRef<[u8]>>(password: &P, dst: &mut String) -> Option<()> {
@@ -354,7 +354,7 @@ pub trait TripcodeGeneratorFailable {
     }
 
     #[inline]
-    /// Attempts to generate a Shift-JIS-encoded tripcode into a `Vec<u8>`.
+    /// Attempts to generate a Shift-JIS-encoded tripcode and append it to a `Vec<u8>`.
     ///
     /// Returns `None` when passed an invalid password.
     fn try_append_sjis<P: AsRef<[u8]>>(password: &P, dst: &mut Vec<u8>) -> Option<()>
