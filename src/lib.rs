@@ -59,7 +59,7 @@ assert_eq!("ydkX0LqkHM", &tripcode);
 tripcode = FourchanNonescaping::generate(&"&amp;&quot;");
 assert_eq!("ydkX0LqkHM", &tripcode);
 
-// 2channel (Monazilla)'s tripcode. This function automatically selects the proper hashing algorithm.
+// 2channel (Monazilla)'s tripcode. This method automatically selects the proper hashing algorithm.
 tripcode = Mona::generate(&"7 bytes");
 assert_eq!("W/RvZlE2K.", &tripcode);
 tripcode = Mona::generate(&"twelve bytes");
