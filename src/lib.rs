@@ -230,7 +230,7 @@ pub struct ScKatakana;
 /// that accepts custom salt characters.
 ///
 /// It is essentially the same as `crypt(3)`, but treats invalid salt characters in 4chan and
-/// 2channel's fashion, i.e., invalid salt characters are reinterpreted as per the following table.
+/// 2channel's fashion. Invalid salt characters are reinterpreted as per the following table.
 ///
 /// | 0x |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  A  |  B  |  C  |  D  |  E  |  F  |
 /// |----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
