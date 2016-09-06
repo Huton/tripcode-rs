@@ -15,7 +15,7 @@ use std::env;
 use std::error::Error;
 use std::io::{self, BufRead, BufReader, Write};
 use std::process;
-use tripcode::TripcodeGenerator;
+use tripcode::*;
 
 fn main() {
     let mut args = env::args();
@@ -51,17 +51,11 @@ fn main() {
         return;
     }
 
-    let ref generate = {
-        let mut bind = String::new();
-        match matches.opt_str("t").map(|s| { bind = s; bind.as_str() }).unwrap_or("4chan") {
-            "2ch"   | "2" => tripcode::Mona::write,
-            "4chan" | "4" => tripcode::Fourchan::write,
-            "sc"    | "s" => tripcode::ScSjis::write,
-            code_type     => fail!("unknown tripcode type `{}`", code_type),
-        }
-    };
-
-    let (opt_f, opt_p) = (matches.opt_present("f"), matches.opt_present("p"));
+    let (opt_f, opt_p, opt_t) = (
+        matches.opt_present("f"),
+        matches.opt_present("p"),
+        matches.opt_str("t")
+    );
     let mut free = matches.free;
 
     let mut passwords: Box<Iterator<Item=Vec<u8>>> = Box::new(
@@ -77,12 +71,29 @@ fn main() {
         );
     }
 
-    for p in passwords {
-        generate(&p, &mut stdout).unwrap();
-        if opt_p {
-            print!("#");
-            stdout.write_all(&p).unwrap();
+    let mut bind = String::new();
+    match opt_t.map(|s| { bind = s; bind.as_str() }).unwrap_or("4chan") {
+        "2ch"   | "2" => generate::<Mona, _, _>(&mut stdout, passwords, opt_p),
+        "4chan" | "4" => generate::<Fourchan, _, _>(&mut stdout, passwords, opt_p),
+        "sc"    | "s" => generate::<ScSjis, _, _>(&mut stdout, passwords, opt_p),
+        code_type     => fail!("unknown tripcode type `{}`", code_type),
+    }
+}
+
+fn generate<G, W, I>(dst: &mut W, passwords: I, opt_p: bool)
+    where G: TripcodeGenerator, W: Write, I: Iterator<Item=Vec<u8>>
+{
+    if opt_p {
+        for p in passwords {
+            G::write(&p, dst).unwrap();
+            dst.write_all(b"#").unwrap();
+            dst.write_all(&p).unwrap();
+            dst.write_all(b"\n").unwrap();
         }
-        println!("");
+    } else {
+        for p in passwords {
+            G::write(&p, dst).unwrap();
+            dst.write_all(b"\n").unwrap();
+        }
     }
 }
