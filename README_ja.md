@@ -27,7 +27,7 @@
 
 ```toml
 [dependencies]
-tripcode = "0.1"
+tripcode = "0.2"
 ```
 
 そしてクレートのルートに以下の行を追加します。

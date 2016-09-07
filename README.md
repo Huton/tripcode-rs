@@ -27,7 +27,7 @@ To use this crate, add the following to your project's `Cargo.toml`:
 
 ```toml
 [dependencies]
-tripcode = "0.1"
+tripcode = "0.2"
 ```
 
 and this to your crate root:
