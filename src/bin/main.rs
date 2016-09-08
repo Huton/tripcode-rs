@@ -73,9 +73,9 @@ fn main() {
 
     let mut bind = String::new();
     match opt_t.map(|s| { bind = s; bind.as_str() }).unwrap_or("4chan") {
-        "2ch"   | "2" => generate::<Mona, _, _>(&mut stdout, passwords, opt_p),
+        "2ch"   | "2" => generate::<Mona,     _, _>(&mut stdout, passwords, opt_p),
         "4chan" | "4" => generate::<Fourchan, _, _>(&mut stdout, passwords, opt_p),
-        "sc"    | "s" => generate::<ScSjis, _, _>(&mut stdout, passwords, opt_p),
+        "sc"    | "s" => generate::<ScSjis,   _, _>(&mut stdout, passwords, opt_p),
         code_type     => fail!("unknown tripcode type `{}`", code_type),
     }
 }
