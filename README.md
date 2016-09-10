@@ -91,7 +91,7 @@ wG1CV58ydQ
 or from stdin (separated by newlines):
 
 ```bash
-$ echo 'd\ne\nf' | tripcode -f
+$ echo -e 'd\ne\nf' | tripcode -f
 taZqHR8ods
 xKvzozvsSk
 bb6OCCHf8E

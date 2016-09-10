@@ -91,7 +91,7 @@ wG1CV58ydQ
 また、パスワードは標準入力から改行区切りで与えることもできます。
 
 ```bash
-$ echo 'd\ne\nf' | tripcode --type=2ch -f
+$ echo -e 'd\ne\nf' | tripcode --type=2ch -f
 taZqHR8ods
 xKvzozvsSk
 bb6OCCHf8E
