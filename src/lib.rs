@@ -50,34 +50,34 @@ use tripcode::*;
 let mut tripcode;
 
 // 4chan's tripcode.
-tripcode = Fourchan::generate(&"password");
+tripcode = Fourchan::generate("password");
 assert_eq!("ozOtJW9BFA", &tripcode);
 
 // The above method handles HTML escaping.
-tripcode = Fourchan::generate(&"&\"");
+tripcode = Fourchan::generate("&\"");
 assert_eq!("ydkX0LqkHM", &tripcode);
-tripcode = FourchanNonescaping::generate(&"&amp;&quot;");
+tripcode = FourchanNonescaping::generate("&amp;&quot;");
 assert_eq!("ydkX0LqkHM", &tripcode);
 
 // 2channel (Monazilla)'s tripcode. This method automatically selects the proper hashing algorithm.
-tripcode = Mona::generate(&"7 bytes");
+tripcode = Mona::generate("7 bytes");
 assert_eq!("W/RvZlE2K.", &tripcode);
-tripcode = Mona::generate(&"twelve bytes");
+tripcode = Mona::generate("twelve bytes");
 assert_eq!("t+lnR7LBqNQY", &tripcode);
-tripcode = Mona::generate(&"#1145145554560721..");
+tripcode = Mona::generate("#1145145554560721..");
 assert_eq!("14cvFmVHg2", &tripcode);
 
 // 2channel's 10-character tripcode (10桁トリップ).
-tripcode = Mona10::generate(&"password longer than 12 bytes");
+tripcode = Mona10::generate("password longer than 12 bytes");
 assert_eq!("ozOtJW9BFA", &tripcode);
 
 // 2channel's nama key tripcode (生キートリップ).
 // This generator is failable so we use `try_generate()` method, which yields an `Option<String>`.
-tripcode = MonaRaw::try_generate(&"#0123456789ABCDEF./").unwrap();
-assert_eq!(&"IP9Lda5FPc", &tripcode);
+tripcode = MonaRaw::try_generate("#0123456789ABCDEF./").unwrap();
+assert_eq!("IP9Lda5FPc", &tripcode);
 
 // 2channel's 12-character tripcode (12桁トリップ).
-tripcode = Mona12::generate(&"<12 bytes");
+tripcode = Mona12::generate("<12 bytes");
 assert_eq!("/9L00Vb1PBcb", &tripcode);
 ```
 
@@ -117,11 +117,11 @@ use tripcode::*;
 // Prepare a buffer
 let mut tripcode = String::with_capacity(20);
 
-Fourchan::append(&"tripcode", &mut tripcode);
+Fourchan::append("tripcode", &mut tripcode);
 assert_eq!("3GqYIJ3Obs", &tripcode);
 assert_eq!(tripcode.capacity(), 20);
 
-Fourchan::append(&"TRIPCODE", &mut tripcode);
+Fourchan::append("TRIPCODE", &mut tripcode);
 assert_eq!("3GqYIJ3ObsPvHEudHNso", &tripcode);
 assert_eq!(tripcode.capacity(), 20); // No allocations have occured!
 ```
@@ -138,7 +138,7 @@ use tripcode::*;
 let mut tripcode = [0u8; 10];
 
 // `&'a mut [u8]` implements `Write`.
-Fourchan::write(&"Writing to stream", &mut (&mut tripcode as &mut [u8])).unwrap();
+Fourchan::write("Writing to stream", &mut (&mut tripcode as &mut [u8])).unwrap();
 assert_eq!("N5MkEeXGtk", String::from_utf8_lossy(&tripcode));
 ```
 */
@@ -265,44 +265,44 @@ pub trait TripcodeGenerator {
     type Hash: TripcodeHash;
 
     /// Generates a hash value that represents the tripcode for `password`.
-    fn hash<P: AsRef<[u8]>>(password: &P) -> Self::Hash;
+    fn hash<P: AsRef<[u8]>>(password: P) -> Self::Hash;
 
     #[inline]
     /// Generates a tripcode from `password`.
-    fn generate<P: AsRef<[u8]>>(password: &P) -> String {
-        Self::hash(password).encode()
+    fn generate<P: AsRef<[u8]>>(password: P) -> String {
+        Self::hash(&password).encode()
     }
 
     #[inline]
     /// Generates a tripcode from `password` and appends it to a `String`.
-    fn append<P: AsRef<[u8]>>(password: &P, dst: &mut String) {
-        Self::hash(password).append(dst);
+    fn append<P: AsRef<[u8]>>(password: P, dst: &mut String) {
+        Self::hash(&password).append(dst);
     }
 
     #[inline]
     /// Generates a tripcode into a `Write`.
-    fn write<P, W>(password: &P, dst: &mut W) -> io::Result<()> where P: AsRef<[u8]>, W: Write {
-        Self::hash(password).write(dst)
+    fn write<P, W>(password: P, dst: &mut W) -> io::Result<()> where P: AsRef<[u8]>, W: Write {
+        Self::hash(&password).write(dst)
     }
 
     #[inline]
     /// Generates a tripcode in Shift-JIS encoding.
-    fn generate_sjis<P: AsRef<[u8]>>(password: &P) -> Vec<u8> {
-        Self::hash(password).encode_to_sjis()
+    fn generate_sjis<P: AsRef<[u8]>>(password: P) -> Vec<u8> {
+        Self::hash(&password).encode_to_sjis()
     }
 
     #[inline]
     /// Generates a Shift-JIS-encoded tripcode and appends it to a `Vec<u8>`.
-    fn append_sjis<P: AsRef<[u8]>>(password: &P, dst: &mut Vec<u8>) {
-        Self::hash(password).append_sjis(dst)
+    fn append_sjis<P: AsRef<[u8]>>(password: P, dst: &mut Vec<u8>) {
+        Self::hash(&password).append_sjis(dst)
     }
 
     #[inline]
     /// Generates a Shift-JIS-encoded tripcode into a `Write`.
-    fn write_sjis<P, W>(password: &P, dst: &mut W) -> io::Result<()>
+    fn write_sjis<P, W>(password: P, dst: &mut W) -> io::Result<()>
         where P: AsRef<[u8]>, W: Write
     {
-        Self::hash(password).write_sjis(dst)
+        Self::hash(&password).write_sjis(dst)
     }
 }
 
@@ -317,13 +317,13 @@ pub trait TripcodeGeneratorFailable {
     /// Attempts to generate a hash value from `password`.
     ///
     /// Returns `None` when passed an invalid password.
-    fn try_hash<P: AsRef<[u8]>>(password: &P) -> Option<Self::Hash>;
+    fn try_hash<P: AsRef<[u8]>>(password: P) -> Option<Self::Hash>;
 
     #[inline]
     /// Attempts to generate a tripcode from `password`.
     ///
     /// Returns `None` when passed an invalid password.
-    fn try_generate<P: AsRef<[u8]>>(password: &P) -> Option<String> {
+    fn try_generate<P: AsRef<[u8]>>(password: P) -> Option<String> {
         Self::try_hash(password).map(|h| h.encode())
     }
 
@@ -331,7 +331,7 @@ pub trait TripcodeGeneratorFailable {
     /// Attempts to generate a tripcode and append it to a `String`.
     ///
     /// Returns `None` when passed an invalid password.
-    fn try_append<P: AsRef<[u8]>>(password: &P, dst: &mut String) -> Option<()> {
+    fn try_append<P: AsRef<[u8]>>(password: P, dst: &mut String) -> Option<()> {
         Self::try_hash(password).map(|h| h.append(dst))
     }
 
@@ -339,7 +339,7 @@ pub trait TripcodeGeneratorFailable {
     /// Attempts to generate a tripcode into a `Write`.
     ///
     /// Returns `None` when passed an invalid password.
-    fn try_write<P, W>(password: &P, dst: &mut W) -> Option<io::Result<()>>
+    fn try_write<P, W>(password: P, dst: &mut W) -> Option<io::Result<()>>
         where P: AsRef<[u8]>, W: Write
     {
         Self::try_hash(password).map(|h| h.write(dst))
@@ -349,7 +349,7 @@ pub trait TripcodeGeneratorFailable {
     /// Attempts to generate a tripcode in Shift-JIS encoding.
     ///
     /// Returns `None` when passed an invalid password.
-    fn try_generate_sjis<P: AsRef<[u8]>>(password: &P) -> Option<Vec<u8>> {
+    fn try_generate_sjis<P: AsRef<[u8]>>(password: P) -> Option<Vec<u8>> {
         Self::try_hash(password).map(|h| h.encode_to_sjis())
     }
 
@@ -357,7 +357,7 @@ pub trait TripcodeGeneratorFailable {
     /// Attempts to generate a Shift-JIS-encoded tripcode and append it to a `Vec<u8>`.
     ///
     /// Returns `None` when passed an invalid password.
-    fn try_append_sjis<P: AsRef<[u8]>>(password: &P, dst: &mut Vec<u8>) -> Option<()>
+    fn try_append_sjis<P: AsRef<[u8]>>(password: P, dst: &mut Vec<u8>) -> Option<()>
     {
         Self::try_hash(password).map(|h| h.append_sjis(dst))
     }
@@ -366,7 +366,7 @@ pub trait TripcodeGeneratorFailable {
     /// Attempts to generate a Shift-JIS-encoded tripcode into a `Write`.
     ///
     /// Returns `None` when passed an invalid password.
-    fn try_write_sjis<P, W>(password: &P, dst: &mut W) -> Option<io::Result<()>>
+    fn try_write_sjis<P, W>(password: P, dst: &mut W) -> Option<io::Result<()>>
         where P: AsRef<[u8]>, W: Write
     {
         Self::try_hash(password).map(|h| h.write_sjis(dst))
@@ -377,8 +377,8 @@ impl<T> TripcodeGeneratorFailable for T where T: TripcodeGenerator {
     type Hash = <Self as TripcodeGenerator>::Hash;
 
     #[inline]
-    fn try_hash<P: AsRef<[u8]>>(password: &P) -> Option<Self::Hash> {
-        Some(Self::hash(password))
+    fn try_hash<P: AsRef<[u8]>>(password: P) -> Option<Self::Hash> {
+        Some(Self::hash(&password))
     }
 }
 
@@ -428,7 +428,7 @@ macro_rules! des_cipher_escaped {
 impl TripcodeGenerator for Fourchan {
     type Hash = FourchanHash;
 
-    fn hash<P: AsRef<[u8]>>(password: &P) -> Self::Hash {
+    fn hash<P: AsRef<[u8]>>(password: P) -> Self::Hash {
         FourchanHash(des_cipher_escaped!(password.as_ref(), fourchan_escape))
     }
 }
@@ -436,7 +436,7 @@ impl TripcodeGenerator for Fourchan {
 impl TripcodeGenerator for FourchanNonescaping {
     type Hash = FourchanHash;
 
-    fn hash<P: AsRef<[u8]>>(password: &P) -> Self::Hash {
+    fn hash<P: AsRef<[u8]>>(password: P) -> Self::Hash {
         let as_ref = password.as_ref();
 
         let (salt1, salt2) = match as_ref.len() {
@@ -445,11 +445,11 @@ impl TripcodeGenerator for FourchanNonescaping {
             _ => (as_ref[1], as_ref[2]),
         };
 
-        Des::hash(password, salt1, salt2)
+        Des::hash(&password, salt1, salt2)
     }
 }
 
-fn mona_internal<P, H, I>(password: &P, escape: bool) -> MonaHash
+fn mona_internal<P, H, I>(password: P, escape: bool) -> MonaHash
     where P: AsRef<[u8]>, H: TripcodeGenerator<Hash=Mona10Hash>, I: TripcodeGenerator<Hash=Mona12Hash>
 {
     use hash::MonaHash::*;
@@ -467,24 +467,24 @@ fn mona_internal<P, H, I>(password: &P, escape: bool) -> MonaHash
     if len >= 12 {
         let sign = as_ref[0];
         if sign == b'#' {
-            match MonaRaw::try_hash(password) {
+            match MonaRaw::try_hash(&password) {
                 Some(h) => Ten(h),
                 None    => Error,
             }
         } else if sign == b'$' {
             Error
         } else {
-            Twelve(I::hash(password))
+            Twelve(I::hash(&password))
         }
     } else {
-        Ten(H::hash(password))
+        Ten(H::hash(&password))
     }
 }
 
 impl TripcodeGenerator for Mona {
     type Hash = MonaHash;
 
-    fn hash<P: AsRef<[u8]>>(password: &P) -> Self::Hash {
+    fn hash<P: AsRef<[u8]>>(password: P) -> Self::Hash {
         mona_internal::<_, Mona10, Mona12>(password, true)
     }
 }
@@ -492,7 +492,7 @@ impl TripcodeGenerator for Mona {
 impl TripcodeGenerator for MonaNonescaping {
     type Hash = MonaHash;
 
-    fn hash<P: AsRef<[u8]>>(password: &P) -> Self::Hash {
+    fn hash<P: AsRef<[u8]>>(password: P) -> Self::Hash {
         mona_internal::<_, Mona10Nonescaping, Mona12Nonescaping>(password, false)
     }
 }
@@ -500,7 +500,7 @@ impl TripcodeGenerator for MonaNonescaping {
 impl TripcodeGenerator for Mona10 {
     type Hash = Mona10Hash;
 
-    fn hash<P: AsRef<[u8]>>(password: &P) -> Self::Hash {
+    fn hash<P: AsRef<[u8]>>(password: P) -> Self::Hash {
         Mona10Hash(des_cipher_escaped!(password.as_ref(), mona_escape))
     }
 }
@@ -508,7 +508,7 @@ impl TripcodeGenerator for Mona10 {
 impl TripcodeGeneratorFailable for MonaRaw {
     type Hash = Mona10Hash;
 
-    fn try_hash<P: AsRef<[u8]>>(password: &P) -> Option<Mona10Hash> {
+    fn try_hash<P: AsRef<[u8]>>(password: P) -> Option<Mona10Hash> {
         let password = password.as_ref();
 
         macro_rules! try_dec {
@@ -583,7 +583,7 @@ fn sha1_internal<T, F>(password: &[u8], escape: bool, result: F) -> T
 impl TripcodeGenerator for Mona12 {
     type Hash = Mona12Hash;
 
-    fn hash<P: AsRef<[u8]>>(password: &P) -> Mona12Hash {
+    fn hash<P: AsRef<[u8]>>(password: P) -> Mona12Hash {
         sha1_internal(password.as_ref(), true, |d| unsafe {
             Mona12Hash((*(d.as_ptr() as *const u64)).to_be(), d[8])
         })
@@ -593,14 +593,14 @@ impl TripcodeGenerator for Mona12 {
 impl TripcodeGenerator for Mona12Nonescaping {
     type Hash = Mona12Hash;
 
-    fn hash<P: AsRef<[u8]>>(password: &P) -> Mona12Hash {
+    fn hash<P: AsRef<[u8]>>(password: P) -> Mona12Hash {
         sha1_internal(password.as_ref(), false, |d| unsafe {
             Mona12Hash((*(d.as_ptr() as *const u64)).to_be(), d[8])
         })
     }
 }
 
-fn sc_internal<P, F>(password: &P, katakana: F) -> ScHash
+fn sc_internal<P, F>(password: P, katakana: F) -> ScHash
     where P: AsRef<[u8]>, F: Fn(&[u8]) -> bool
 {
     use hash::ScHash::*;
@@ -610,29 +610,29 @@ fn sc_internal<P, F>(password: &P, katakana: F) -> ScHash
     if as_ref.len() >= 12 {
         let sign = as_ref[0];
         if sign == b'#' {
-            match MonaRaw::try_hash(password) {
+            match MonaRaw::try_hash(&password) {
                 Some(h) => Ten(h),
                 None    => Error,
             }
         } else if sign == b'$' {
-            let h = Sc15::hash(password);
+            let h = Sc15::hash(&password);
             if katakana(as_ref) {
                 Katakana(ScKatakanaHash(h))
             } else {
                 Fifteen(h)
             }
         } else {
-            Twelve(Mona12Nonescaping::hash(password))
+            Twelve(Mona12Nonescaping::hash(&password))
         }
     } else {
-        Ten(FourchanNonescaping::hash(password))
+        Ten(FourchanNonescaping::hash(&password))
     }
 }
 
 impl TripcodeGenerator for Sc {
     type Hash = ScHash;
 
-    fn hash<P: AsRef<[u8]>>(password: &P) -> ScHash {
+    fn hash<P: AsRef<[u8]>>(password: P) -> ScHash {
         sc_internal(password, sc_password_starts_with_katakana)
     }
 }
@@ -640,7 +640,7 @@ impl TripcodeGenerator for Sc {
 impl TripcodeGenerator for ScSjis {
     type Hash = ScHash;
 
-    fn hash<P: AsRef<[u8]>>(password: &P) -> ScHash {
+    fn hash<P: AsRef<[u8]>>(password: P) -> ScHash {
         sc_internal(password, |slice| {
                 let first = slice[1];
                 0xA1 <= first && first <= 0xDF // [｡-ﾟ]
@@ -652,7 +652,7 @@ impl TripcodeGenerator for ScSjis {
 impl TripcodeGenerator for Sc15 {
     type Hash = Sc15Hash;
 
-    fn hash<P: AsRef<[u8]>>(password: &P) -> Sc15Hash {
+    fn hash<P: AsRef<[u8]>>(password: P) -> Sc15Hash {
         sha1_internal(&password.as_ref(), false, |d| unsafe {
             // 2ch.sc's tripcode uses 19-108th bits of SHA-1 digest.
             // Sc15Hash(u64, u32) ->
@@ -673,14 +673,14 @@ impl TripcodeGenerator for Sc15 {
 impl TripcodeGenerator for ScKatakana {
     type Hash = ScKatakanaHash;
 
-    fn hash<P: AsRef<[u8]>>(password: &P) -> ScKatakanaHash {
-        ScKatakanaHash(Sc15::hash(password))
+    fn hash<P: AsRef<[u8]>>(password: P) -> ScKatakanaHash {
+        ScKatakanaHash(Sc15::hash(&password))
     }
 }
 
 impl Des {
     /// Generates a hash value from `password` and a pair of custom salt characters.
-    pub fn hash<P: AsRef<[u8]>>(password: &P, salt1: u8, salt2: u8) -> FourchanHash {
+    pub fn hash<P: AsRef<[u8]>>(password: P, salt1: u8, salt2: u8) -> FourchanHash {
         let key = secret_to_key(password.as_ref());
         let salt = decode_salt(salt1, salt2);
         FourchanHash(des::zero_cipher_58(key, salt))
@@ -688,19 +688,19 @@ impl Des {
 
     #[inline]
     /// Generates a tripcode from `password` and a pair of custom salt characters.
-    pub fn generate<P: AsRef<[u8]>>(password: &P, salt1: u8, salt2: u8) -> String {
+    pub fn generate<P: AsRef<[u8]>>(password: P, salt1: u8, salt2: u8) -> String {
         Self::hash(password, salt1, salt2).encode()
     }
 
     #[inline]
     /// Generates a tripcode and appends it to a `String`.
-    pub fn append<P: AsRef<[u8]>>(password: &P, salt1: u8, salt2: u8, dst: &mut String) {
+    pub fn append<P: AsRef<[u8]>>(password: P, salt1: u8, salt2: u8, dst: &mut String) {
         Self::hash(password, salt1, salt2).append(dst);
     }
 
     #[inline]
     /// Generates a tripcode into a `Write`.
-    pub fn write<P, W>(password: &P, salt1: u8, salt2: u8, dst: &mut W) -> io::Result<()> where P: AsRef<[u8]>, W: Write {
+    pub fn write<P, W>(password: P, salt1: u8, salt2: u8, dst: &mut W) -> io::Result<()> where P: AsRef<[u8]>, W: Write {
         Self::hash(password, salt1, salt2).write(dst)
     }
 }
@@ -810,9 +810,9 @@ mod tests {
 
     #[test]
     fn des() {
-        let tripcode = Des::generate(&"password", b'a', b's');
+        let tripcode = Des::generate("password", b'a', b's');
         assert_eq!("ozOtJW9BFA", &tripcode);
-        let tripcode = Des::generate(&"", b'H', b'.');
+        let tripcode = Des::generate("", b'H', b'.');
         assert_eq!("jPpg5.obl6", &tripcode);
     }
 
@@ -820,15 +820,15 @@ mod tests {
     fn append() {
         let mut tripcode = String::new();
 
-        Mona10::append(&"a", &mut tripcode);
-        Mona10::append(&"b", &mut tripcode);
-        Mona10::append(&"c", &mut tripcode);
-        Mona12::append(&"0123456789ab", &mut tripcode);
-        Mona::append(&"##0123456789", &mut tripcode);
-        let k = SJIS.encode(&"$｡1008343131", EncoderTrap::Strict).unwrap();
+        Mona10::append("a", &mut tripcode);
+        Mona10::append("b", &mut tripcode);
+        Mona10::append("c", &mut tripcode);
+        Mona12::append("0123456789ab", &mut tripcode);
+        Mona::append("##0123456789", &mut tripcode);
+        let k = SJIS.encode("$｡1008343131", EncoderTrap::Strict).unwrap();
         ScKatakana::append(&k, &mut tripcode);
-        Sc15::append(&"$a9876543210", &mut tripcode);
-        Des::append(&"de", b'e', b'H', &mut tripcode);
+        Sc15::append("$a9876543210", &mut tripcode);
+        Des::append("de", b'e', b'H', &mut tripcode);
 
         assert_eq!(
             "ZnBI2EKkq.\
