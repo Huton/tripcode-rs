@@ -34,6 +34,7 @@ mod enc_dec;
 use self::enc_dec::EncoderDecoder;
 use std::{io, mem};
 use std::io::Write;
+use mem::MaybeUninit;
 
 /// 58-bit hash value that represents a 10-character tripcode
 /// i.e. 4chan's tripcode or 2channel's 10-character tripcode (10桁トリップ).
@@ -83,7 +84,7 @@ pub enum ScHash {
 macro_rules! try_dec {
     ($d:expr) => {
         match $d {
-            0...0x3F => $d,
+            0..=0x3F => $d,
             _            => return None,
         }
     }
@@ -103,19 +104,19 @@ pub trait TripcodeHash : Sized {
     fn max_len_sjis() -> usize;
 
     /// Encodes `self` into a tripcode and appends it on a `String`.
-    fn append(self, &mut String);
+    fn append(self, _: &mut String);
 
     /// Encodes `self` into a tripcode and writes it to a `Write`.
-    fn write<W: Write>(self, &mut W) -> io::Result<()>;
+    fn write<W: Write>(self, _: &mut W) -> io::Result<()>;
 
     /// Decodes a Shift-JIS-encoded tripcode.
-    fn decode_from_sjis(&[u8]) -> Option<Self>;
+    fn decode_from_sjis(_: &[u8]) -> Option<Self>;
 
     /// Encodes `self` into a Shift-JIS-encoded tripcode and appends it on a `Vec<u8>`.
-    fn append_sjis(self, &mut Vec<u8>);
+    fn append_sjis(self, _: &mut Vec<u8>);
 
     /// Encodes `self` into a Shift-JIS-encoded tripcode and writes it to a `Write`.
-    fn write_sjis<W: Write>(self, &mut W) -> io::Result<()>;
+    fn write_sjis<W: Write>(self, _: &mut W) -> io::Result<()>;
 
     #[inline]
     /// Encodes `self` into a tripcode.
@@ -140,16 +141,16 @@ pub trait TripcodeHash : Sized {
 /// `TripcodeHash`, which is automatically implemented for types of this trait.
 pub trait AsciiTripcodeHash : Sized {
     /// Decodes an ASCII-encoded tripcode into a hash value.
-    fn decode_from_ascii(&[u8]) -> Option<Self>;
+    fn decode_from_ascii(_: &[u8]) -> Option<Self>;
 
     /// Returns maximum length of resulting tripcode.
     fn max_len() -> usize;
 
     /// Encodes `self` into an ASCII-encoded tripcode and writes it on a `String`.
-    fn append_ascii(self, &mut Vec<u8>);
+    fn append_ascii(self, _: &mut Vec<u8>);
 
     /// Encodes `self` into an ASCII-encoded tripcode and writes it to a `Write`.
-    fn write_ascii<W: Write>(self, &mut W) -> io::Result<()>;
+    fn write_ascii<W: Write>(self, _: &mut W) -> io::Result<()>;
 
     #[inline]
     /// Encodes `self` into an ASCII-encoded tripcode.
@@ -298,7 +299,7 @@ impl AsciiTripcodeHash for FourchanHash {
     }
 
     fn write_ascii<W: Write>(mut self, dst: &mut W) -> io::Result<()> {
-        let mut buf: [u8; 10] = unsafe { mem::uninitialized() };
+        let mut buf: [u8; 10] = unsafe { MaybeUninit::zeroed().assume_init() };
 
         for b in &mut buf {
             *b = enc_dec::Crypt::encode((self.0 >> 58) as usize);
@@ -352,7 +353,7 @@ impl AsciiTripcodeHash for Mona12Hash {
     }
 
     fn write_ascii<W: Write>(mut self, dst: &mut W) -> io::Result<()> {
-        let mut buf: [u8; 12] = unsafe { mem::uninitialized() };
+        let mut buf: [u8; 12] = unsafe { MaybeUninit::zeroed().assume_init() };
         encode_mona_12_main!(self, buf);
         dst.write_all(&buf)
     }
@@ -524,7 +525,7 @@ impl AsciiTripcodeHash for Sc15Hash {
     }
 
     fn write_ascii<W: Write>(mut self, dst: &mut W) -> io::Result<()> {
-        let mut buf: [u8; 15] = unsafe { mem::uninitialized() };
+        let mut buf: [u8; 15] = unsafe { MaybeUninit::zeroed().assume_init() };
         encode_sc_sha1_main!(enc_dec::Sc15, self, buf);
         dst.write_all(&buf)
     }
@@ -638,11 +639,11 @@ impl TripcodeHash for ScKatakanaHash {
 
     fn write<W: Write>(mut self, dst: &mut W) -> io::Result<()> {
         for _ in 0..10 {
-            try!(dst.write_all(enc_dec::ScKatakana::encode(((self.0).0 >> 58) as usize)));
+            (dst.write_all(enc_dec::ScKatakana::encode(((self.0).0 >> 58) as usize)))?;
             (self.0).0 <<= 6;
         }
         for _ in 10..15 {
-            try!(dst.write_all(enc_dec::ScKatakana::encode(((self.0).1 >> 26) as usize)));
+            (dst.write_all(enc_dec::ScKatakana::encode(((self.0).1 >> 26) as usize)))?;
             (self.0).1 <<= 6;
         }
         Ok(())
@@ -660,7 +661,7 @@ impl TripcodeHash for ScKatakanaHash {
     }
 
     fn write_sjis<W: Write>(mut self, dst: &mut W) -> io::Result<()> {
-        let mut buf: [u8; 15] = unsafe { mem::uninitialized() };
+        let mut buf: [u8; 15] = unsafe { MaybeUninit::zeroed().assume_init() };
         encode_sc_sha1_main!(enc_dec::ScSjisKatakana, self.0, buf);
         dst.write_all(&buf)
     }

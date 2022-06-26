@@ -156,6 +156,7 @@ use crypto::digest::Digest;
 use hash::*;
 use util::*;
 use std::{io, mem};
+use mem::MaybeUninit;
 use std::io::Write;
 
 pub mod hash;
@@ -530,7 +531,7 @@ impl TripcodeGeneratorFailable for MonaRaw {
         macro_rules! try_hex {
             ($c:expr) => {
                 match hex_to_i($c) {
-                    x @ 0...0xF => x,
+                    x @ 0..=0xF => x,
                     _           => return None,
                 }
             }
@@ -560,7 +561,7 @@ fn sha1_internal<T, F>(password: &[u8], escape: bool, result: F) -> T
     where F: Fn(&[u8; 20]) -> T
 {
     let mut sha1 = Sha1::new();
-    let mut digest: [u8; 20] = unsafe { mem::uninitialized() };
+    let mut digest: [u8; 20] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     if escape {
         let mut first = 0;

@@ -149,7 +149,7 @@ pub fn decode_salt_strict(salt1: u8, salt2: u8) -> Option<u32> {
     macro_rules! try_dec {
         ($c:expr) => {
             match SALT_DECODING_STRICT[$c as usize] {
-                d @ 0...0x3F => d,
+                d @ 0..=0x3F => d,
                 _            => return None,
             }
         };
