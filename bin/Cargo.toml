@@ -1,0 +1,32 @@
+# Note: if using Nightly, you can uncomment this line and the line in the [[bin]] section.
+# We need this because our bin name and lib name can't conflict, but bin name should be "tripcode".
+#cargo-features = ["different-binary-name"]
+
+[package]
+name = "tripcode-cli"
+edition = "2021"
+version = "0.3.0"
+authors = ["Huton", "Fredrick R. Brennan <copypaste@kittens.ph>"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/huton/tripcode-rs"
+documentation = "https://docs.rs/tripcode/"
+description = "A library for generating tripcodes on imageboards and textboards."
+readme = "README.md"
+keywords = ["tripcode", "4chan", "2channel", "imageboard", "textboard", "keijiban", "BBS", "掲示板", "トリップ"]
+
+[dependencies]
+getopts = "0.2"
+tripcode = { path = "../lib" }
+gettext = { version = "0.4", optional = true }
+i18n-embed = { version = "0.13", optional = true, features = ["gettext-system", "desktop-requester"] }
+rust-embed = { version = "6.4", optional = true }
+tr = { version = "0.1", optional = true, features = ["gettext"], default-features = false }
+sys-locale = { version = "0.2", optional = true }
+lazy_static = { version = "1.4", optional = true }
+
+[[bin]]
+name = "tripcode-cli"
+#filename = "tripcode"
+
+[features]
+i18n = ["gettext", "sys-locale", "lazy_static", "i18n-embed", "tr", "rust-embed"]

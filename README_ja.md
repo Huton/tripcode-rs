@@ -1,4 +1,6 @@
 # Tripcode
+© 2016年〜2022年 フトンとフレッド・ブレンナン
+
 [![ビルド状況](https://travis-ci.org/Huton/tripcode-rs.svg?branch=master)](https://travis-ci.org/Huton/tripcode-rs)
 [![最新バージョン](http://meritbadge.herokuapp.com/tripcode)](https://crates.io/crates/tripcode)
 
@@ -102,4 +104,43 @@ bb6OCCHf8E
 ```bash
 $ echo トリップ | iconv -t sjis | tripcode --type=2ch -f
 XSSH/ryx32
+```
+
+# 国際化
+
+国際化は `gettext` で提供されます。
+
+国際化があるビルドする方法：
+```bash
+cd bin
+cargo i18n
+cargo build --release --features=i18n
+```
+
+**注：** [`9e86a65`](https://github.com/MFEK/cargo-i18n/) 以降の [cargo-i18n](https://github.com/kellpossible/cargo-i18n/pull/93/commits/9e86a65e8bba8846c669953f634d617066695002) が必要である。
+
+バイナリ容量はそれほど大きくは増えません。
+
+```bash
+$ cargo build --release
+…
+$ ls -alh target/release/tripcode-cli
+-rwxrwxr-x 2 fred fred 4.0M Sep 19 13:00 target/release/tripcode-cli
+$ cargo build --release --features=i18n
+…
+$ ls -alh target/release/tripcode-cli
+-rwxrwxr-x 2 fred fred 6.4M Sep 19 12:52 target/release/tripcode-cli
+```
+
+`--profile=release-lto` でかなり小さくすることができる。
+
+```bash
+$ cargo build --profile=release-lto
+…
+$ ls -alh target/release-lto/tripcode-cli
+-rwxrwxr-x 2 fred fred 441K Sep 19 13:03 target/release-lto/tripcode-cli
+$ cargo build --profile=release-lto --features=i18n
+…
+$ ls -alh target/release-lto/tripcode-cli
+-rwxrwxr-x 2 fred fred 2.3M Sep 19 13:02 target/release-lto/tripcode-cli
 ```

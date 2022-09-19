@@ -1,0 +1,50 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-09-19 16:40+0000\n"
+"PO-Revision-Date: 2022-09-19 09:21-0400\n"
+"Last-Translator: Fred Brennan <copypaste@kittens.ph>\n"
+"Language-Team: \n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: src/main.rs:38
+msgid "Usage: tripcode [options] [--] [passwords]"
+msgstr "使用法: tripcode [設定] [--] [トリップキー (パスワード)]"
+
+#: src/main.rs:42
+msgid "specify the type of tripcodes. defaults to `4chan`"
+msgstr "トリップコードの種類を設定。初期値は `4chan`"
+
+#: src/main.rs:43
+msgid "read passwords from standard input"
+msgstr "標準入力からパスワードを読み取る"
+
+#: src/main.rs:44
+msgid "print this help message and exit"
+msgstr "この文を表示し、終了"
+
+#: src/main.rs:45
+msgid "print passwords along with tripcodes"
+msgstr "トリップキーとトリップコードを標準出力する"
+
+#: src/main.rs:46
+msgid "print the tripcode prefix !"
+msgstr "トリップコードの接頭辞を標準出力する（◆）"
+
+#: src/main.rs:49
+msgid "Options:"
+msgstr "設定一覧"
+
+#: src/main.rs:97
+msgid "unknown tripcode type"
+msgstr "不明なトリップ型"
+
+#: src/main.rs:106
+msgid "!"
+msgstr "◆"
