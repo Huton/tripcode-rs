@@ -35,7 +35,7 @@ msgstr "トリップキーとトリップコードを標準出力する"
 
 #: src/main.rs:46
 msgid "print the tripcode prefix !"
-msgstr "トリップコードの接頭辞を標準出力する（！）"
+msgstr "トリップコードの接頭辞を標準出力する（◆）"
 
 #: src/main.rs:49
 msgid "Options:"
