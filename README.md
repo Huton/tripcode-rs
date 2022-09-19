@@ -1,4 +1,6 @@
 # Tripcode
+(c) 2016-2022 Huton & Fredrick Brennan
+
 [![Build Status](https://travis-ci.org/Huton/tripcode-rs.svg?branch=master)](https://travis-ci.org/Huton/tripcode-rs)
 [![Current Version](http://meritbadge.herokuapp.com/tripcode)](https://crates.io/crates/tripcode)
 
@@ -106,3 +108,46 @@ XSSH/ryx32
 
 The command defaults to generate 4chan's tripcodes.
 You can generate 2channel's tripcodes by using `--type=2ch` option.
+
+# Internationalization
+
+i18n is provided via `gettext`, _optionally_.
+
+To build with it:
+
+```bash
+cd bin
+cargo i18n
+cargo build --release --features=i18n
+```
+
+Note: Requires [cargo-i18n][cargo-i18n] with [`9e86a65`][commit-info] applied.
+
+  [cargo-i18n]: https://github.com/MFEK/cargo-i18n/ <!-- Change this when kellpossible/cargo-i18n#93 merged. -->
+  [commit-info]: https://github.com/kellpossible/cargo-i18n/pull/93/commits/9e86a65e8bba8846c669953f634d617066695002
+
+It increases the size of the binary not too much:
+
+```bash
+$ cargo build --release
+…
+$ ls -alh target/release/tripcode-cli
+-rwxrwxr-x 2 fred fred 4.0M Sep 19 13:00 target/release/tripcode-cli
+$ cargo build --release --features=i18n
+…
+$ ls -alh target/release/tripcode-cli
+-rwxrwxr-x 2 fred fred 6.4M Sep 19 12:52 target/release/tripcode-cli
+```
+
+This can be brought down significantly with `--profile=release-lto`:
+
+```bash
+$ cargo build --profile=release-lto
+…
+$ ls -alh target/release-lto/tripcode-cli
+-rwxrwxr-x 2 fred fred 441K Sep 19 13:03 target/release-lto/tripcode-cli
+$ cargo build --profile=release-lto --features=i18n
+…
+$ ls -alh target/release-lto/tripcode-cli
+-rwxrwxr-x 2 fred fred 2.3M Sep 19 13:02 target/release-lto/tripcode-cli
+```

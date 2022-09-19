@@ -1,0 +1,9 @@
+fallback_language = "en"
+
+[gettext]
+assets_dir = "i18n"
+output_dir = "i18n"
+pot_dir = "i18n/pot"
+po_dir = "i18n/po"
+mo_dir = "i18n/mo"
+target_languages = ["ja", "en"]
