@@ -121,10 +121,7 @@ cargo i18n
 cargo build --release --features=i18n
 ```
 
-Note: Requires [cargo-i18n][cargo-i18n] with [`9e86a65`][commit-info] applied.
-
-  [cargo-i18n]: https://github.com/MFEK/cargo-i18n/ <!-- Change this when kellpossible/cargo-i18n#93 merged. -->
-  [commit-info]: https://github.com/kellpossible/cargo-i18n/pull/93/commits/9e86a65e8bba8846c669953f634d617066695002
+Note: Requires [cargo-i18n](https://github.com/MFEK/cargo-i18n/) with [`9e86a65`](https://github.com/kellpossible/cargo-i18n/pull/93/commits/9e86a65e8bba8846c669953f634d617066695002) applied.
 
 It increases the size of the binary not too much:
 

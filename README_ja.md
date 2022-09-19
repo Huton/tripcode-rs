@@ -117,10 +117,7 @@ cargo i18n
 cargo build --release --features=i18n
 ```
 
-**注：** [`9e86a65`][commit-info] 以降の [cargo-i18n][cargo-i18n] が必要である。
-
-  [cargo-i18n]: https://github.com/MFEK/cargo-i18n/ <!-- Change this when kellpossible/cargo-i18n#93 merged. -->
-  [commit-info]: https://github.com/kellpossible/cargo-i18n/pull/93/commits/9e86a65e8bba8846c669953f634d617066695002
+**注：** [`9e86a65`](https://github.com/MFEK/cargo-i18n/) 以降の [cargo-i18n](https://github.com/kellpossible/cargo-i18n/pull/93/commits/9e86a65e8bba8846c669953f634d617066695002) が必要である。
 
 バイナリ容量はそれほど大きくは増えません。
 
